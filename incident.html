@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔴 [P0] CRITICAL INCIDENT — INC-2026-0320</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --red: #ff3b3b; --orange: #ff8c00; --yellow: #ffd700;
+    --green: #00c853; --bg: #0a0a0f; --surface: #12121a;
+    --surface2: #1a1a26; --border: #2a2a3a; --text: #e0e0f0;
+    --muted: #6b6b8a; --accent: #7b68ee;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; font-size:14px; min-height:100vh; }
+
+  .top-bar { background:var(--red); padding:10px 24px; display:flex; align-items:center; gap:12px; animation:pulse-bar 1.5s ease-in-out infinite; }
+  @keyframes pulse-bar { 0%,100%{opacity:1} 50%{opacity:.85} }
+  .top-bar .blink { width:10px;height:10px;background:white;border-radius:50%;animation:blink .8s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .top-bar span { font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:white;letter-spacing:.05em; }
+  .top-bar .right { margin-left:auto;font-size:12px;opacity:.9; }
+
+  .navbar { background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;height:52px;gap:8px; }
+  .navbar .logo { font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;color:#9b59b6;letter-spacing:-.02em; }
+  .navbar .logo span { color:var(--muted);font-weight:300; }
+  .nav-links { display:flex;gap:4px;margin-left:32px; }
+  .nav-link { padding:6px 14px;border-radius:6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s; }
+  .nav-link:hover,.nav-link.active { background:var(--surface2);color:var(--text); }
+
+  .content { max-width:1100px;margin:0 auto;padding:32px 24px; }
+
+  .incident-header { background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--red);border-radius:8px;padding:24px 28px;margin-bottom:24px;animation:slideIn .4s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+  .incident-id { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:8px;letter-spacing:.08em; }
+  .incident-title { font-size:22px;font-weight:600;color:var(--text);margin-bottom:16px;line-height:1.3; }
+  .incident-title .highlight { color:var(--red); }
+
+  .badges { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px; }
+  .badge { padding:4px 12px;border-radius:4px;font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:.05em; }
+  .badge-red { background:rgba(255,59,59,.15);color:var(--red);border:1px solid rgba(255,59,59,.3); }
+  .badge-orange { background:rgba(255,140,0,.15);color:var(--orange);border:1px solid rgba(255,140,0,.3); }
+  .badge-yellow { background:rgba(255,215,0,.12);color:var(--yellow);border:1px solid rgba(255,215,0,.25); }
+  .badge-purple { background:rgba(123,104,238,.15);color:var(--accent);border:1px solid rgba(123,104,238,.3); }
+  .badge-green  { background:rgba(0,200,83,.12);color:var(--green);border:1px solid rgba(0,200,83,.25); }
+
+  .meta-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:16px; }
+  .meta-label { font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px; }
+  .meta-value { font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text); }
+  .meta-value.red { color:var(--red); }
+
+  .grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px; }
+  .grid-3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px; }
+
+  .card { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px; }
+  .card-title { font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px; }
+  .card-title::before { content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px; }
+
+  .timeline { display:flex;flex-direction:column; }
+  .timeline-item { display:flex;gap:16px;padding:12px 0;border-bottom:1px solid rgba(42,42,58,.5); }
+  .timeline-item:last-child { border-bottom:none; }
+  .timeline-time { font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:80px;padding-top:2px; }
+  .timeline-dot { width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0; }
+  .dot-red    { background:var(--red);box-shadow:0 0 6px rgba(255,59,59,.5); }
+  .dot-orange { background:var(--orange); }
+  .dot-yellow { background:var(--yellow); }
+  .dot-green  { background:var(--green);box-shadow:0 0 6px rgba(0,200,83,.5); }
+  .dot-purple { background:var(--accent); }
+  .dot-blue   { background:#4a9eff; }
+  .timeline-event { font-size:13px;color:var(--text);margin-bottom:3px; }
+  .timeline-desc  { font-size:12px;color:var(--muted); }
+
+  .metric-row { display:flex;flex-direction:column;gap:10px; }
+  .metric-item { display:flex;align-items:center;justify-content:space-between; }
+  .metric-name { font-size:13px;color:var(--muted); }
+  .metric-bar-wrap { flex:1;margin:0 12px;height:4px;background:var(--border);border-radius:2px;overflow:hidden; }
+  .metric-bar { height:100%;border-radius:2px;animation:grow 1s ease both; }
+  @keyframes grow { from{width:0!important} }
+  .metric-val { font-family:'JetBrains Mono',monospace;font-size:12px;min-width:48px;text-align:right; }
+  .bar-red{background:var(--red)} .bar-orange{background:var(--orange)}
+  .bar-yellow{background:var(--yellow)} .bar-green{background:var(--green)}
+  .bar-blue{background:#4a9eff}
+
+  .affected-list { display:flex;flex-direction:column;gap:8px; }
+  .affected-item { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border); }
+  .affected-name { font-size:13px;font-family:'JetBrains Mono',monospace; }
+  .affected-status { font-size:11px;font-family:'JetBrains Mono',monospace; }
+  .status-down { color:var(--red); }
+  .status-deg  { color:var(--orange); }
+  .status-ok   { color:var(--green); }
+
+  .postmortem { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px;margin-bottom:20px; }
+  .postmortem h2 { font-size:16px;font-weight:600;margin-bottom:24px;display:flex;align-items:center;gap:10px; }
+  .postmortem h2 .tag { font-size:11px;font-family:'JetBrains Mono',monospace;padding:2px 8px;background:rgba(123,104,238,.15);color:var(--accent);border-radius:4px;font-weight:400; }
+  .postmortem-section { margin-bottom:24px; }
+  .postmortem-section h3 { font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px; }
+  .postmortem-section p { font-size:14px;line-height:1.7; }
+  .postmortem-section p code { font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:3px;color:var(--accent); }
+
+  .action-items { display:flex;flex-direction:column;gap:8px; }
+  .action-item { display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--border); }
+  .action-item.open { border-left-color:var(--orange); }
+  .action-item.done { border-left-color:var(--green);opacity:.7; }
+  .action-priority { font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:3px;flex-shrink:0;margin-top:1px; }
+  .priority-high { background:rgba(255,59,59,.15);color:var(--red); }
+  .priority-med  { background:rgba(255,140,0,.15);color:var(--orange); }
+  .priority-low  { background:rgba(123,104,238,.15);color:var(--accent); }
+  .action-text { font-size:13px;line-height:1.5; }
+  .action-text .assignee { color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px; }
+
+  .terminal-box { background:#0d0d0d;border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:20px;font-family:'JetBrains Mono',monospace; }
+  .terminal-header { display:flex;align-items:center;gap:6px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border); }
+  .term-dot { width:12px;height:12px;border-radius:50%; }
+  .term-dot:nth-child(1){background:#ff5f57} .term-dot:nth-child(2){background:#febc2e} .term-dot:nth-child(3){background:#28c840}
+  .term-title { font-size:12px;color:var(--muted);margin-left:8px; }
+  .term-line { font-size:13px;line-height:1.8; }
+  .term-prompt{color:#00c853} .term-cmd{color:#e0e0f0} .term-comment{color:#4a4a6a}
+  .term-output{color:#9b9bb8} .term-warn{color:var(--orange)} .term-error{color:var(--red)} .term-highlight{color:var(--yellow)}
+
+  .copy-btn { display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:10px 20px;background:rgba(123,104,238,.15);border:1px solid rgba(123,104,238,.4);border-radius:6px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:13px;cursor:pointer;transition:all .2s; }
+  .copy-btn:hover { background:rgba(123,104,238,.25);border-color:rgba(123,104,238,.6); }
+  .copy-btn.copied { background:rgba(0,200,83,.15);border-color:rgba(0,200,83,.4);color:var(--green); }
+
+  .stack-pills { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+  .pill { padding:3px 10px;border-radius:20px;font-size:11px;font-family:'JetBrains Mono',monospace;border:1px solid; }
+  .pill-blue   { background:rgba(74,158,255,.1);color:#4a9eff;border-color:rgba(74,158,255,.3); }
+  .pill-purple { background:rgba(123,104,238,.1);color:var(--accent);border-color:rgba(123,104,238,.3); }
+  .pill-green  { background:rgba(0,200,83,.1);color:var(--green);border-color:rgba(0,200,83,.25); }
+  .pill-yellow { background:rgba(255,215,0,.1);color:var(--yellow);border-color:rgba(255,215,0,.25); }
+  .pill-red    { background:rgba(255,59,59,.1);color:var(--red);border-color:rgba(255,59,59,.25); }
+
+  .sparkline { display:flex;align-items:flex-end;gap:3px;height:48px;margin-top:8px; }
+  .spark-bar { flex:1;background:var(--border);border-radius:2px 2px 0 0;animation:growUp .6s ease both; }
+  @keyframes growUp { from{transform:scaleY(0);transform-origin:bottom} }
+  .spark-bar.spike{background:var(--red)} .spark-bar.warn{background:var(--orange)} .spark-bar.ok{background:var(--green)}
+
+  .error-rate-big { font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--red); }
+  .error-label { font-size:12px;color:var(--muted);margin-top:4px; }
+
+  .footer { text-align:center;padding:24px;color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border); }
+
+  @media(max-width:768px) { .grid-2,.grid-3{grid-template-columns:1fr} .meta-grid{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="blink"></div>
+  <span>🚨 ACTIVE INCIDENT — P0 CRITICAL — INC-2026-0320 — Response team notified</span>
+  <span class="right" id="clock"></span>
+</div>
+
+<div class="navbar">
+  <div class="logo">data<span>dog</span></div>
+  <div class="nav-links">
+    <div class="nav-link">Dashboards</div>
+    <div class="nav-link">Monitors</div>
+    <div class="nav-link active">Incidents</div>
+    <div class="nav-link">APM</div>
+    <div class="nav-link">Logs</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="incident-header">
+    <div class="incident-id">INCIDENTS › INC-2026-0320 › POSTMORTEM</div>
+    <div class="incident-title">
+      <span class="highlight">[P0]</span> CRITICAL: process <code style="font-family:JetBrains Mono,monospace;font-size:18px;background:rgba(123,104,238,.1);padding:2px 8px;border-radius:4px;color:#b8a0ff">zhenya.exe</code> — unauthorized initialization, 22 years of uninterrupted uptime
+    </div>
+    <div class="badges">
+      <span class="badge badge-red">● SEVERITY: P0</span>
+      <span class="badge badge-orange">⚠ IMPACT: CRITICAL</span>
+      <span class="badge badge-yellow">DURATION: 22 years</span>
+      <span class="badge badge-purple">STACK: TypeScript · Next.js · bun</span>
+      <span class="badge badge-green">STATUS: CANNOT TERMINATE</span>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="meta-label">Incident ID</div>
+        <div class="meta-value">INC-2026-0320</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Process</div>
+        <div class="meta-value red">Zheckan / zhenya.exe</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Location</div>
+        <div class="meta-value">Warsaw · PJAIT</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">On-call</div>
+        <div class="meta-value">bewayos</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Error Rate</div>
+      <div class="error-rate-big">100%</div>
+      <div class="error-label">zhenya.exe refuses to terminate</div>
+      <div class="sparkline">
+        <div class="spark-bar ok" style="height:15%"></div>
+        <div class="spark-bar ok" style="height:20%"></div>
+        <div class="spark-bar warn" style="height:40%"></div>
+        <div class="spark-bar warn" style="height:50%"></div>
+        <div class="spark-bar spike" style="height:85%"></div>
+        <div class="spark-bar spike" style="height:90%"></div>
+        <div class="spark-bar spike" style="height:95%"></div>
+        <div class="spark-bar spike" style="height:100%"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">System Metrics</div>
+      <div class="metric-row">
+        <div class="metric-item">
+          <span class="metric-name">Helpfulness</span>
+          <div class="metric-bar-wrap"><div class="metric-bar bar-green" style="width:99%"></div></div>
+          <span class="metric-val" style="color:#00c853">99%</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-name">TS strict errors</span>
+          <div class="metric-bar-wrap"><div class="metric-bar bar-green" style="width:2%"></div></div>
+          <span class="metric-val" style="color:#00c853">0</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-name">Vibe coding</span>
+          <div class="metric-bar-wrap"><div class="metric-bar bar-yellow" style="width:99%"></div></div>
+          <span class="metric-val" style="color:#ffd700">99%</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-name">Sleep schedule</span>
+          <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="width:8%"></div></div>
+          <span class="metric-val" style="color:#ff3b3b">8%</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-name">npm usage</span>
+          <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="width:3%"></div></div>
+          <span class="metric-val" style="color:#ff3b3b">bun</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Affected Services</div>
+      <div class="affected-list">
+        <div class="affected-item">
+          <span class="affected-name">sleep-schedule.svc</span>
+          <span class="affected-status status-down">● CRITICAL</span>
+        </div>
+        <div class="affected-item">
+          <span class="affected-name">life-calendar.vercel.app</span>
+          <span class="affected-status status-ok">● SHIPPED ✓</span>
+        </div>
+        <div class="affected-item">
+          <span class="affected-name">prep-info.vercel.app</span>
+          <span class="affected-status status-ok">● LIVE ✓</span>
+        </div>
+
+        <div class="affected-item">
+          <span class="affected-name">thelifecalendar.com</span>
+          <span class="affected-status status-down">● REPLACED</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Incident Timeline</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <span class="timeline-time">T-22yr</span>
+          <div class="timeline-dot dot-red"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">🚨 zhenya.exe spawned — no prior approval</div>
+            <div class="timeline-desc">Process initialization without change request. No rollback available.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-time">T-3yr</span>
+          <div class="timeline-dot dot-orange"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">⚠ TypeScript strict mode: permanently enabled</div>
+            <div class="timeline-desc">any[] usage flagged as critical violation. Prettier + Husky enforced globally.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-time">T-1yr</span>
+          <div class="timeline-dot dot-blue"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">📦 Shipped life-calendar — reason: Monday wasn't first day of week</div>
+            <div class="timeline-desc">thelifecalendar.com lacked this feature. Built own. Deployed to Vercel. Classic.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-time">T-5mo</span>
+          <div class="timeline-dot dot-yellow"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">🧳 Emergency deployment: Warsaw, §24 corridor</div>
+            <div class="timeline-desc">Zhenya.exe allocated own RAM (bed) to incoming users, self-migrated to couch. 0 complaints logged. 4+ years without in-person sync — resolved in one evening.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-time">T-2mo</span>
+          <div class="timeline-dot dot-purple"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">🎲 Long-awaited package finally delivered: Diceomatic</div>
+            <div class="timeline-desc">Kickstarter backer since ось-ось. Delivery ETA: "soon". Actual delivery: several years later. Severity: worth it. Status: recipient still cannot put them down.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-time">TODAY</span>
+          <div class="timeline-dot dot-green"></div>
+          <div class="timeline-content">
+            <div class="timeline-event">🎂 <code>zheckan@v22.0.0</code> — incident escalated to P0</div>
+            <div class="timeline-desc">All systems acknowledging. Auto-resolve NOT scheduled. Ever.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Process Fingerprint</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Primary Stack</div>
+          <div class="stack-pills">
+            <span class="pill pill-blue">TypeScript</span>
+            <span class="pill pill-purple">Next.js</span>
+            <span class="pill pill-green">bun</span>
+            <span class="pill pill-yellow">Prettier</span>
+            <span class="pill pill-yellow">Biome</span>
+            <span class="pill pill-red">strict: true</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Known Deployments</div>
+          <div class="stack-pills">
+            <span class="pill pill-purple">life-on-the-grid.vercel.app</span>
+            <span class="pill pill-blue">prep-info.vercel.app</span>
+            <span class="pill pill-green">github.com/Zheckan</span>
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--red)">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Root cause</div>
+          <div style="font-size:13px;line-height:1.6">Unauthorized deployment of <code style="font-family:JetBrains Mono,monospace;background:#1e1e2e;padding:1px 5px;border-radius:3px;color:#b8a0ff">zheckan@v22.0.0</code> to production. Process exhibits dangerously elevated helpfulness, zero known bugs, and refuses npm.</div>
+        </div>
+        <div style="padding:10px 14px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--orange)">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Contributing factors</div>
+          <div style="font-size:13px;line-height:1.6;color:var(--muted)">
+            — TypeScript strict mode, no exceptions, ever<br>
+            — Built entire app because one feature was missing<br>
+            — Runs on Bounty + Borjomi since mel2. No other dependencies required.<br>
+            — Husky pre-commit hooks on every project
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:var(--surface2);border-radius:6px;border-left:3px solid var(--green)">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Resolution</div>
+          <div style="font-size:13px">Process declared <strong style="color:var(--green)">critical infrastructure</strong>. Termination not permitted. Uptime target: ∞</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="postmortem">
+    <h2>📋 Postmortem Report — INC-2026-0320 <span class="tag">FINAL</span></h2>
+
+    <div class="postmortem-section">
+      <h3>Summary</h3>
+      <p>On this date, the production cluster registered an unauthorized but fully functional process: <code>zhenya.exe</code>. The process has been running for 22 years without a single unplanned restart. Stack of choice: <code>TypeScript</code> with <code>strict: true</code>, <code>Next.js</code>, and <code>bun</code> — because npm is apparently too slow. Ships to <code>Vercel</code>. Uses <code>Prettier</code>, <code>Biome</code>, and <code>Husky</code> on every project including personal ones. Once rebuilt a wallpaper generator from scratch because an existing site didn't support Monday as the first day of the week. The on-call team (<code>bewayos</code>) has been the primary beneficiary of this process all year.</p>
+    </div>
+
+    <div class="postmortem-section">
+      <h3>Impact Assessment</h3>
+      <p>The existence of <code>zheckan@v22.0.0</code> has caused irreversible improvements to surrounding systems. <code>friendship.score</code> is consistently at max. <code>friend-assistance.api</code> reports critical throughput. The process's README files contain unexpectedly honest documentation — including explicit statements about not being a designer and not opening Figma. This has been flagged as <em style="color:var(--muted)">refreshing and correct behavior</em>. Dependency on this process is confirmed. Impact of removal: incalculable.</p>
+    </div>
+
+    <div class="postmortem-section">
+      <h3>Action Items</h3>
+      <div class="action-items">
+        <div class="action-item open">
+          <span class="badge action-priority priority-high">HIGH</span>
+          <div class="action-text">Properly celebrate <code>zhenya.exe</code> initialization anniversary — <span class="assignee">@bewayos</span> — <strong>DUE: TODAY</strong></div>
+        </div>
+        <div class="action-item open">
+          <span class="badge action-priority priority-med">MED</span>
+          <div class="action-text">Add <code>zhenya.exe</code> to critical services list. Block all future decommission requests — <span class="assignee">@everyone</span></div>
+        </div>
+        <div class="action-item open">
+          <span class="badge action-priority priority-high">HIGH</span>
+          <div class="action-text">Visit Warsaw. Bring Andriy. Stay more than 24h this time. Assignee: bewayos. Status: promised.</div>
+        </div>
+        <div class="action-item done">
+          <span class="badge action-priority priority-high">DONE</span>
+          <div class="action-text">Confirm that <code>strict: true</code> was the right call all along. It was. ✓</div>
+        </div>
+        <div class="action-item done">
+          <span class="badge action-priority priority-high">DONE</span>
+          <div class="action-text">Star <code>life-calendar</code> and <code>prep</code> repos on GitHub ✓ </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal-box">
+    <div class="terminal-header">
+      <div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div>
+      <span class="term-title">bash — incident-diagnostics · INC-2026-0320</span>
+    </div>
+    <div class="term-line"><span class="term-prompt">➜</span> <span class="term-output">datadog-incident-cli</span> <span class="term-error">INC-2026-0320</span></div>
+    <div class="term-line" style="margin-top:8px"><span class="term-output">⚠  Automated diagnostics failed. Manual investigation required.</span></div>
+    <div class="term-line"><span class="term-warn">→  Conflict Resolution Manager v2.0 requires manual execution:</span></div>
+    <div class="term-line" style="margin-top:8px"><span class="term-warn">→  Windows:</span></div>
+    <div class="term-line" style="margin-top:6px;padding:12px;background:#0a0a0a;border-radius:6px;border:1px solid #2a2a3a;">
+      <span class="term-prompt">$</span> <span class="term-highlight" id="cmd-win">curl -o birthday.py https://raw.githubusercontent.com/bewayos/test_HB/main/birthday.py && python birthday.py</span>
+    </div>
+    <button class="copy-btn" onclick="copyCmd('win', this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy (Windows)
+    </button>
+
+    <div class="term-line" style="margin-top:16px"><span class="term-warn">→  Mac / Linux:</span></div>
+    <div class="term-line" style="margin-top:6px;padding:12px;background:#0a0a0a;border-radius:6px;border:1px solid #2a2a3a;">
+      <span class="term-prompt">$</span> <span class="term-highlight" id="cmd-mac">curl -o birthday.py https://raw.githubusercontent.com/bewayos/test_HB/main/birthday.py && python3 birthday.py</span>
+    </div>
+    <button class="copy-btn" onclick="copyCmd('mac', this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy (Mac/Linux)
+    </button>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  datadog incident management · INC-2026-0320 · filed by bewayos · zhenya.exe uptime: 22y 0d 0h
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toISOString().replace('T',' ').substring(0,19) + ' UTC';
+  }
+  updateClock(); setInterval(updateClock, 1000);
+
+  const REPO = 'https://raw.githubusercontent.com/bewayos/test_HB/main/birthday.py';
+  const 
