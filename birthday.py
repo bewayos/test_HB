@@ -940,8 +940,6 @@ def main():
         slow(f"  {DIM}Знищіть достатню кількість конфліктів у кодовій базі щоб розблокувати результат.{RST}", d=0.018)
         print(); pause(0.8)
 
-        run_arcade(cheat=cheat)
-
         won_all = run_arcade(cheat=cheat)
 
         phase_glitch_post()
